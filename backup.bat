@@ -114,7 +114,7 @@ if %returnBool% == true (
 )
 
 if %returnBool% == true (
-	call :7zPress E:\ITEM\%logName%.7z %backupDir%
+	call :7zPress E:\ITEM\%logName%.7z %backupDir% 7F3QxsGDGGs9ns9RKQ2t
 
 )
 
@@ -192,8 +192,8 @@ rem FileCopy( copyOriginalDir, copyDirTo )
 
 exit /b
 
-rem 7zPress( resultOutDirName, inPressDir )
-rem example : ( E:\ITEM\test.7z, E:\ITEM\test )
+rem 7zPress( resultOutDirName, inPressDir, password )
+rem example : ( E:\ITEM\test.7z, E:\ITEM\test, password )
 :7zPress
 	call :LogCreate %logName% %currentDir% "-----------------------------------------------------------------------------"
 	call :LogLf %logName% %currentDir%
@@ -201,16 +201,24 @@ rem example : ( E:\ITEM\test.7z, E:\ITEM\test )
 		rem すでにバックアップファイルが存在する場合は, 削除を行う
 		if exist %1 (
 			del /q %1
+			set localIsComp=true
+			
+
+		) else (
+			set localIsComp=true
+			echo %localIsComp%
+
+		)
+		if %localIsComp% == true (
 			rem マルチスレッドオプション有効化, 上書き書き込み, 圧縮レベル 9 ( 最高 )
-			7z a -mmt=on -mx=9 %1 %2 >> %currentDir%\%logName%.log 2>>&1
+			rem http://ashiyu.cocolog-nifty.com/blog/2015/06/7zip-a28d.html : パスワード設定方法
+			7z a -mmt=on -mhe=on -p%3 -mx=9 %1 %2 >> %currentDir%\%logName%.log 2>>&1
+			echo Success
 			echo %ERRORLEVEL%
 			if NOT %ERRORLEVEL% == 0 (
 				call :LogCreate %logName% %currentDir% "7z failed : 7z 圧縮プログラムでエラーが発生しました。"
 
 			)
-
-		) else (
-			call :LogCreate %logName% %currentDir% "7z failed : { %1 } ディレクトリがありません。圧縮先保存ディレクトリがあるか確認して下さい。"
 
 		)
 
@@ -220,6 +228,7 @@ rem example : ( E:\ITEM\test.7z, E:\ITEM\test )
 	)
 	call :LogLf %logName% %currentDir%
 	call :LogCreate %logName% %currentDir% "-----------------------------------------------------------------------------"
+	rem set localIsComp=false
 
 exit /b
 
